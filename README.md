@@ -35,6 +35,16 @@ Run the whole stack (MongoDB + API + Frontend) with Docker Compose:
 docker compose up --build
 ```
 
+Or use helper scripts (better error messages):
+
+```bash
+# Git Bash / macOS / Linux
+./scripts/docker-up.sh
+
+# PowerShell
+./scripts/docker-up.ps1
+```
+
 Services:
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:5000
@@ -51,6 +61,17 @@ To stop and remove database volume:
 ```bash
 docker compose down -v
 ```
+
+
+### Docker Troubleshooting
+
+If you see `no configuration file provided: not found`:
+- Ensure you are in the project root (same folder containing `docker-compose.yml`).
+- Run `ls -la` and verify `docker-compose.yml` is listed.
+- If missing, re-download/re-clone the latest repository before running Compose.
+
+If you see `docker: command not found`:
+- Install Docker Desktop and restart your terminal session.
 
 ## Backend (Node.js + Express + MongoDB)
 

@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import { connectDB } from './config/db.js';
+import { errorHandler } from './middleware/error.js';
 import authRoutes from './routes/authRoutes.js';
 import listingRoutes from './routes/listingRoutes.js';
 import applicationRoutes from './routes/applicationRoutes.js';
@@ -27,6 +28,9 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Last-resort error boundary for async and sync route failures.
+app.use(errorHandler);
 
 const port = process.env.PORT || 5000;
 connectDB()

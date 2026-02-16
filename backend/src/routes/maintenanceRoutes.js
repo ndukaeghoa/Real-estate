@@ -2,10 +2,11 @@ import express from 'express';
 import { MaintenanceRequest } from '../models/MaintenanceRequest.js';
 import { Listing } from '../models/Listing.js';
 import { authRequired, permit } from '../middleware/auth.js';
+import { asyncHandler } from '../middleware/error.js';
 
 const router = express.Router();
 
-router.post('/', authRequired, permit('tenant'), async (req, res) => {
+router.post('/', authRequired, permit('tenant'), asyncHandler(async (req, res) => {
   const { listingId, issue, priority } = req.body;
   const listing = await Listing.findById(listingId);
   if (!listing) return res.status(404).json({ message: 'Listing not found' });
@@ -19,18 +20,18 @@ router.post('/', authRequired, permit('tenant'), async (req, res) => {
   });
 
   res.status(201).json(request);
-});
+}));
 
-router.get('/', authRequired, async (req, res) => {
+router.get('/', authRequired, asyncHandler(async (req, res) => {
   let filter = {};
   if (req.user.role === 'tenant') filter = { tenant: req.user._id };
   if (req.user.role === 'landlord') filter = { landlord: req.user._id };
 
   const requests = await MaintenanceRequest.find(filter).populate('listing', 'title address');
   res.json(requests);
-});
+}));
 
-router.patch('/:id', authRequired, permit('landlord', 'admin'), async (req, res) => {
+router.patch('/:id', authRequired, permit('landlord', 'admin'), asyncHandler(async (req, res) => {
   const request = await MaintenanceRequest.findById(req.params.id);
   if (!request) return res.status(404).json({ message: 'Maintenance request not found' });
 
@@ -43,6 +44,6 @@ router.patch('/:id', authRequired, permit('landlord', 'admin'), async (req, res)
   await request.save();
 
   res.json(request);
-});
+}));
 
 export default router;

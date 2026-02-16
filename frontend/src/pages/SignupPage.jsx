@@ -4,18 +4,25 @@ import { useAuth } from '../context/AuthContext';
 
 export const SignupPage = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'tenant' });
+  const [error, setError] = useState('');
   const { signup } = useAuth();
   const navigate = useNavigate();
 
   const submit = async (e) => {
     e.preventDefault();
-    await signup(form);
-    navigate('/dashboard');
+    setError('');
+    try {
+      await signup(form);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Unable to sign up.');
+    }
   };
 
   return (
     <form onSubmit={submit} className="max-w-md mx-auto bg-white border rounded-lg p-6 space-y-3">
       <h2 className="text-xl font-semibold">Create account</h2>
+      {error && <p className="text-sm text-red-600">{error}</p>}
       {['name', 'email', 'password'].map((field) => (
         <input
           key={field}

@@ -4,23 +4,29 @@ import { Listing } from '../models/Listing.js';
 import { Payment } from '../models/Payment.js';
 import { Application } from '../models/Application.js';
 import { authRequired, permit } from '../middleware/auth.js';
+import { asyncHandler } from '../middleware/error.js';
 
 const router = express.Router();
 
 router.use(authRequired, permit('admin'));
 
-router.get('/users', async (_req, res) => {
+router.get('/users', asyncHandler(async (_req, res) => {
   const users = await User.find().select('-passwordHash');
   res.json(users);
-});
+}));
 
-router.patch('/users/:id/role', async (req, res) => {
+router.patch('/users/:id/role', asyncHandler(async (req, res) => {
   const { role } = req.body;
-  const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-passwordHash');
-  res.json(user);
-});
+  if (!['landlord', 'tenant', 'admin'].includes(role)) {
+    return res.status(400).json({ message: 'Invalid role' });
+  }
 
-router.get('/analytics', async (_req, res) => {
+  const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-passwordHash');
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  res.json(user);
+}));
+
+router.get('/analytics', asyncHandler(async (_req, res) => {
   const [totalListings, approvedListings, totalRevenueAgg, totalApplications, users] = await Promise.all([
     Listing.countDocuments(),
     Listing.countDocuments({ status: 'approved' }),
@@ -36,6 +42,6 @@ router.get('/analytics', async (_req, res) => {
     users,
     totalRevenue: totalRevenueAgg[0]?.total ?? 0
   });
-});
+}));
 
 export default router;
